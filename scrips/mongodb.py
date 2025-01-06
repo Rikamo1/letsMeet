@@ -7,13 +7,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pymongo
 
-current_dir = os.getcwd()
-parent_dir = os.path.dirname(current_dir)
-
-
-import pymongo
-import pandas as pd
-
 # MongoDB-Verbindungsdetails
 mongo_host = 'localhost'  # Hostname der MongoDB
 mongo_port = 27017        # Standardport von MongoDB
@@ -28,11 +21,12 @@ collection = db[collection_name]
 # Alle Daten aus der Sammlung abrufen
 data = list(collection.find())
 
-# Umwandlung der Daten in ein Pandas DataFrame
-df = pd.DataFrame(data)
+# Überprüfen, ob Daten vorhanden sind
+if data:
+    # Umwandlung der Daten in ein Pandas DataFrame
+    df = pd.DataFrame(data)
 
-# Falls _id-Feld entfernt werden soll (MongoDB speichert automatisch eine _id für jedes Dokument)
-df = df.drop(columns=['_id'], errors='ignore')
-
-# Ausgabe des DataFrames
-print(df)
+    # Ausgabe des DataFrames
+    print(df)
+else:
+    print("Keine Daten gefunden.")
