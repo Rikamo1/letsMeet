@@ -42,6 +42,7 @@ cur.execute("""
         user_id INT REFERENCES users(_id),
         hobby VARCHAR(50),
         priority VARCHAR(16)
+    )
 """)
 
 cur.execute("""
