@@ -4,7 +4,8 @@ import xml.etree.ElementTree as ET
 
 # Datei-Pfad
 current_dir = os.path.dirname(__file__)
-file_path = os.path.join(current_dir, '..', 'Lets_Meet_Hobbies.xml')
+parant_dir = os.path.join(current_dir, '..')
+file_path = os.path.join(parant_dir, '..', 'Lets_Meet_Hobbies.xml')
 
 def get_dataframe_from_xml():
     if os.path.exists(file_path):
@@ -64,5 +65,3 @@ def get_dataframe_from_xml():
     else:
         print(f"XML-Datei nicht gefunden: {file_path}")
         return None
-
-import os

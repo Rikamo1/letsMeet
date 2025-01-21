@@ -1,7 +1,7 @@
 import pandas as pd
 import psycopg2
 from sqlalchemy import create_engine
-from scrips import merge_dataframes
+import merge_dataframes
 
 # Verbindung zur PostgreSQL-Datenbank herstellen
 DATABASE_URL = "postgresql://user:secret@localhost:5432/lf8_lets_meet_db"
@@ -41,8 +41,7 @@ cur.execute("""
         _id SERIAL PRIMARY KEY,
         user_id INT REFERENCES users(_id),
         hobby VARCHAR(50),
-        priority INT
-    )
+        priority VARCHAR(16)
 """)
 
 cur.execute("""
