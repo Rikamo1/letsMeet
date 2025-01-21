@@ -8,7 +8,7 @@ file_path = os.path.join(current_dir, 'Lets_Meet_Hobbies.xml')
 global df
 def get_dataframe_from_xml():
     if os.path.exists(file_path):
-        print("XML-Datei gefunden. Einlesen...")
+        print("XML-Datei gefunden.")
         try:
             # XML-Daten einlesen und Struktur prüfen
             tree = ET.parse(file_path)
