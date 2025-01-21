@@ -117,7 +117,7 @@ for _, row in df.iterrows():
         """, (user_id, row['photo']))
 
     # Daten einfügen: Freunde
-    if pd.notnull(row.get('friends')):
+    if row.get('friends') and pd.notnull(row.get('friends')):
         friends = row['friends'].split(',')  # Angenommen, Freunde sind durch Komma getrennt
         for friend_id in friends:
             cur.execute("""
