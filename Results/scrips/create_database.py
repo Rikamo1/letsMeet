@@ -127,7 +127,7 @@ for _, row in df.iterrows():
 
     # Daten einfügen: Likes
     if pd.notnull(row.get('likes')):
-        likes = row['likes'].split(',')  # Angenommen, Likes sind durch Komma getrennt
+        likes = str(row['likes']).split(',')  # Angenommen, Likes sind durch Komma getrennt
         for like in likes:
             hobby, score = like.split(':')  # Angenommen, Format ist "hobby:score"
             cur.execute("""
