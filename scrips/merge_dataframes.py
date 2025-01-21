@@ -10,20 +10,20 @@ def get_full_dataframe():
     xml_df = get_dataframe_from_xml()
     xlsx_df = get_data_frame_from_xlsx()
 
-    print("DB:")
-    print(db_df.head().T)
-    print("XML:")
-    print(xml_df.head().T)
-    print("XLSX:")
-    print(xlsx_df.head().T)
+    # print("DB:")
+    # print(db_df.head().T)
+    # print("XML:")
+    # print(xml_df.head().T)
+    # print("XLSX:")
+    # print(xlsx_df.head().T)
 
     # print columns
-    print("DB:")
-    print(db_df.columns)
-    print("XML:")
-    print(xml_df.columns)
-    print("XLSX:")
-    print(xlsx_df.columns)
+    # print("DB:")
+    # print(db_df.columns)
+    # print("XML:")
+    # print(xml_df.columns)
+    # print("XLSX:")
+    # print(xlsx_df.columns)
 
     # Vorbereitung auf merge
 
@@ -70,7 +70,7 @@ def get_full_dataframe():
     # Merge full_df with db_df
     full_df = pd.merge(full_df, db_df, on="_id", how="outer")
 
-    print("Full:")
-    print(full_df.head().T)
+    # print("Full:")
+    # print(full_df.head().T)
     return full_df
 
