@@ -2,6 +2,7 @@ import pandas as pd
 import psycopg2
 from sqlalchemy import create_engine
 import merge_dataframes
+import json
 
 # Verbindung zur PostgreSQL-Datenbank herstellen
 DATABASE_URL = "postgresql://user:secret@localhost:5432/lf8_lets_meet_db"
@@ -9,6 +10,9 @@ engine = create_engine(DATABASE_URL)
 
 # Beispiel-DataFrame (mit echten Daten ersetzen)
 df = merge_dataframes.get_full_dataframe()
+
+df['Geburtsdatum'] = pd.to_datetime(df['Geburtsdatum'], format='%d.%m.%Y').dt.strftime('%Y-%m-%d')
+
 
 # Verbindung zur PostgreSQL-Datenbank herstellen
 conn = psycopg2.connect(
@@ -40,7 +44,7 @@ cur.execute("""
     CREATE TABLE IF NOT EXISTS hobbies (
         _id SERIAL PRIMARY KEY,
         user_id INT REFERENCES users(_id),
-        hobby VARCHAR(50),
+        hobby VARCHAR(255),
         priority VARCHAR(16)
     )
 """)
@@ -125,32 +129,57 @@ for _, row in df.iterrows():
                 VALUES (%s, %s) ON CONFLICT DO NOTHING
             """, (user_id, int(friend_id)))
 
-    if pd.notnull(row.get('likes')):
-        likes = str(row['likes']).split(',')  # Angenommen, Likes sind durch Komma getrennt
-        for like in likes:
-            # Validierung des Formats: "hobby:score"
-            if ':' in like:
-                hobby, score = like.split(':', 1)  # Maximal 1 Split durchführen
-                try:
-                    cur.execute("""
-                        INSERT INTO likes (user_id, liked_hobby, score) 
-                        VALUES (%s, %s, %s)
-                    """, (user_id, hobby.strip(), int(score.strip())))
-                except ValueError:
-                    print(f"Ungültiges Like-Format: {like}")
-            else:
-                print(f"Ungültiges Like-Format: {like}")
+    # Daten einfügen: Likes
+    likes_data = row.get('likes')
 
+    # Überprüfen, ob likes_data eine nicht-leere Liste oder ein String ist
+    if likes_data and (isinstance(likes_data, str) or (isinstance(likes_data, list) and len(likes_data) > 0)):
+        try:
+            # Versuche, den Wert als JSON zu parsen, falls es ein String ist
+            likes = json.loads(likes_data) if isinstance(likes_data, str) else likes_data
+            if isinstance(likes, list):  # Falls `likes` eine Liste von Objekten ist
+                for like in likes:
+                    if isinstance(like, dict) and 'liked_hobby' in like and 'score' in like:
+                        cur.execute("""
+                            INSERT INTO likes (user_id, liked_hobby, score) 
+                            VALUES (%s, %s, %s)
+                        """, (user_id, like['liked_hobby'], int(like['score'])))
+                    else:
+                        print(f"Ungültiges Like-Objekt: {like}")
+            else:
+                print(f"Ungültiges Like-Format: {likes}")
+        except (json.JSONDecodeError, ValueError) as e:
+            print(f"Fehler beim Verarbeiten von Likes: {e}")
+    else:
+        print(f"Likes-Feld fehlt oder ist leer: {likes_data}")
 
     # Daten einfügen: Nachrichten
-    if pd.notnull(row.get('messages')):
-        messages = row['messages'].split(';')  # Angenommen, Nachrichten sind durch Semikolon getrennt
-        for message in messages:
-            receiver_id, text, sent_at = message.split('|')  # Angenommen, Format ist "receiver_id|text|sent_at"
-            cur.execute("""
-                INSERT INTO messages (sender_id, receiver_id, message_text, sent_at) 
-                VALUES (%s, %s, %s, %s)
-            """, (user_id, int(receiver_id), text, sent_at))
+    if row.get('messages'):
+        try:
+            if isinstance(row['messages'], str) and row['messages'].strip():
+                messages = row['messages'].split(';')  # Angenommen, Nachrichten sind durch Semikolon getrennt
+                for message in messages:
+                    if '|' in message:  # Sicherstellen, dass das Format korrekt ist
+                        receiver_id, text, sent_at = message.split('|', 2)  # Maximal 2 Splits
+                        cur.execute("""
+                            INSERT INTO messages (sender_id, receiver_id, message_text, sent_at) 
+                            VALUES (%s, %s, %s, %s)
+                        """, (user_id, int(receiver_id), text.strip(), sent_at.strip()))
+                    else:
+                        print(f"Ungültiges Nachrichten-Format: {message}")
+            elif isinstance(row['messages'], list) and len(row['messages']) > 0:
+                for message in row['messages']:
+                    if isinstance(message, dict) and 'receiver_id' in message and 'message_text' in message and 'sent_at' in message:
+                        cur.execute("""
+                            INSERT INTO messages (sender_id, receiver_id, message_text, sent_at) 
+                            VALUES (%s, %s, %s, %s)
+                        """, (user_id, int(message['receiver_id']), message['message_text'].strip(), message['sent_at'].strip()))
+            else:
+                print(f"Ungültiges oder leeres Nachrichtenfeld: {row['messages']}")
+        except ValueError as e:
+            print(f"Fehler beim Verarbeiten von Nachrichten: {e}")
+    else:
+        print(f"Nachrichtenfeld fehlt oder ist null: {row.get('messages')}")
 
 # Änderungen speichern und Verbindung schließen
 conn.commit()
