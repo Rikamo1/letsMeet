@@ -1,1 +1,2 @@
 from merge_dataframes import get_full_dataframe
+get_full_dataframe()
