@@ -52,7 +52,7 @@ def get_full_dataframe():
             xlsx_df.at[row.Index, f"hobby_{i}"] = hobby[0]
             # Add prio to xlsx_df
             xlsx_df.at[row.Index, f"prio_{i}"] = hobby[1]
-            
+     
     # Drop Hobbies column
     xlsx_df.drop(columns=["Hobbies"], inplace=True)
 
@@ -70,7 +70,6 @@ def get_full_dataframe():
     # Merge full_df with db_df
     full_df = pd.merge(full_df, db_df, on="_id", how="outer")
 
-    # print("Full:")
     # print(full_df.head().T)
     return full_df
 
