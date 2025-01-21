@@ -125,15 +125,22 @@ for _, row in df.iterrows():
                 VALUES (%s, %s) ON CONFLICT DO NOTHING
             """, (user_id, int(friend_id)))
 
-    # Daten einfügen: Likes
     if pd.notnull(row.get('likes')):
         likes = str(row['likes']).split(',')  # Angenommen, Likes sind durch Komma getrennt
         for like in likes:
-            hobby, score = like.split(':')  # Angenommen, Format ist "hobby:score"
-            cur.execute("""
-                INSERT INTO likes (user_id, liked_hobby, score) 
-                VALUES (%s, %s, %s)
-            """, (user_id, hobby, int(score)))
+            # Validierung des Formats: "hobby:score"
+            if ':' in like:
+                hobby, score = like.split(':', 1)  # Maximal 1 Split durchführen
+                try:
+                    cur.execute("""
+                        INSERT INTO likes (user_id, liked_hobby, score) 
+                        VALUES (%s, %s, %s)
+                    """, (user_id, hobby.strip(), int(score.strip())))
+                except ValueError:
+                    print(f"Ungültiges Like-Format: {like}")
+            else:
+                print(f"Ungültiges Like-Format: {like}")
+
 
     # Daten einfügen: Nachrichten
     if pd.notnull(row.get('messages')):
