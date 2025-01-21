@@ -63,11 +63,4 @@ def get_dataframe_from_xml():
             print(f"Allgemeiner Fehler: {e}")
     else:
         print(f"XML-Datei nicht gefunden: {file_path}")
-
-def save_df_as_csv():
-            # Speichere als CSV-Datei
-            output_path = os.path.join(current_dir, 'Lets_Meet_Hobbies_XML_output.csv')
-            df.to_csv(output_path, index=False)
-
-            print(f"CSV-Datei wurde erfolgreich erstellt: {output_path}")
-            print(df.head())
+        
