@@ -26,6 +26,12 @@ def get_data_frame_from_db():
     if data:
         # Umwandlung der Daten in ein Pandas DataFrame
         db_df = pd.DataFrame(data)
+        # aus name wird first_name und last_name
+        db_df['first_name'] = db_df['name'].str.split(' ').str[0]
+        db_df['last_name'] = db_df['name'].str.split(' ').str[1]
+        # enfernen von name
+        db_df.drop(columns=['name'], inplace=True)
+        
         print("MongoDB gefunden.")
         return db_df
     else:

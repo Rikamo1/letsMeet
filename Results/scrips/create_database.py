@@ -23,11 +23,13 @@ conn = psycopg2.connect(
     port="5432"
 )
 cur = conn.cursor()
-
+# Alle tabellen löschen (wir brauchen mehrere versuche, da die tabellen fehlerhaft waren)
+cur.execute("DROP TABLE IF EXISTS users, hobbies, photos, friends, likes, messages CASCADE")
 # Tabellen erstellen
 cur.execute("""
-    CREATE TABLE IF NOT EXISTS users (
+    CREATE TABLE users (
         _id SERIAL PRIMARY KEY,
+        email VARCHAR(50) UNIQUE,
         first_name VARCHAR(50),
         last_name VARCHAR(50),
         address VARCHAR(100),
@@ -41,7 +43,7 @@ cur.execute("""
 """)
 
 cur.execute("""
-    CREATE TABLE IF NOT EXISTS hobbies (
+    CREATE TABLE hobbies (
         _id SERIAL PRIMARY KEY,
         user_id INT REFERENCES users(_id),
         hobby VARCHAR(255),
@@ -50,7 +52,7 @@ cur.execute("""
 """)
 
 cur.execute("""
-    CREATE TABLE IF NOT EXISTS photos (
+    CREATE TABLE photos (
         _id SERIAL PRIMARY KEY,
         user_id INT REFERENCES users(_id),
         photo_url VARCHAR(255)
@@ -58,7 +60,7 @@ cur.execute("""
 """)
 
 cur.execute("""
-    CREATE TABLE IF NOT EXISTS friends (
+    CREATE TABLE friends (
         user_id INT REFERENCES users(_id),
         friend_id INT REFERENCES users(_id),
         PRIMARY KEY (user_id, friend_id)
@@ -66,16 +68,17 @@ cur.execute("""
 """)
 
 cur.execute("""
-    CREATE TABLE IF NOT EXISTS likes (
+    CREATE TABLE likes (
         _id SERIAL PRIMARY KEY,
         user_id INT REFERENCES users(_id),
-        liked_hobby VARCHAR(50),
-        score INT
+        liked_email VARCHAR(50),
+        status VARCHAR(20),
+        timestamp TIMESTAMP
     )
 """)
 
 cur.execute("""
-    CREATE TABLE IF NOT EXISTS messages (
+    CREATE TABLE messages (
         _id SERIAL PRIMARY KEY,
         sender_id INT REFERENCES users(_id),
         receiver_id INT REFERENCES users(_id),
@@ -87,12 +90,13 @@ cur.execute("""
 # Daten einfügen: Users
 for _, row in df.iterrows():
     cur.execute("""
-        INSERT INTO users (first_name, last_name, address, phone, gender, interested_in, birth_date, created_at, updated_at) 
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        INSERT INTO users (email, first_name, last_name, address, phone, gender, interested_in, birth_date, created_at, updated_at) 
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         RETURNING _id
     """, (
-        row['first_name'], 
-        row['last_name'], 
+        row['_id'],
+        row['first_name_y'], 
+        row['last_name_y'], 
         row['Straße Nr, PLZ Ort'], 
         row['phone'], 
         row['Geschlecht (m/w/nonbinary)'], 
@@ -139,13 +143,15 @@ for _, row in df.iterrows():
             likes = json.loads(likes_data) if isinstance(likes_data, str) else likes_data
             if isinstance(likes, list):  # Falls `likes` eine Liste von Objekten ist
                 for like in likes:
-                    if isinstance(like, dict) and 'liked_hobby' in like and 'score' in like:
+                    # if like is not null
+                    if like:
                         cur.execute("""
-                            INSERT INTO likes (user_id, liked_hobby, score) 
-                            VALUES (%s, %s, %s)
-                        """, (user_id, like['liked_hobby'], int(like['score'])))
+                            INSERT INTO likes (user_id, liked_email, status, timestamp) 
+                            VALUES (%s, %s, %s, %s)
+                        """, (user_id, like['liked_email'], like['status'], like['timestamp']))
                     else:
-                        print(f"Ungültiges Like-Objekt: {like}")
+                        print(f"Ungültiges Like-Format: {likes}")
+                
             else:
                 print(f"Ungültiges Like-Format: {likes}")
         except (json.JSONDecodeError, ValueError) as e:

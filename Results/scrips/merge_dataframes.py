@@ -34,14 +34,9 @@ def get_full_dataframe():
     # Split name fields in XML and XLSX to first_name and last_name
    
     if "Nachname, Vorname" in xlsx_df.columns:
-        xlsx_df["first_name"] = xlsx_df["Nachname, Vorname"].str.split(" ").str[0]
-        xlsx_df["last_name"] = xlsx_df["Nachname, Vorname"].str.split(" ").str[1]
+        xlsx_df["first_name"] = xlsx_df["Nachname, Vorname"].str.replace(" ", "").str.split(",").str[0]
+        xlsx_df["last_name"] = xlsx_df["Nachname, Vorname"].str.replace(" ", "").str.split(",").str[1]
         xlsx_df.drop(columns=["Nachname, Vorname"], inplace=True)
-        
-    if "name" in xml_df.columns:
-        xml_df["first_name"] = xml_df["name"].str.split(" ").str[0]
-        xml_df["last_name"] = xml_df["name"].str.split(" ").str[1]
-        xml_df.drop(columns=["name"], inplace=True)
 
     # rename XLSX Hobby1 %Prio1%; Hobby2 %Prio2%; Hobby3 %Prio3%; Hobby4 %Prio4%; Hobby5 %Prio5%; column to Hobbies
     xlsx_df.rename(columns={"Hobby1 %Prio1%; Hobby2 %Prio2%; Hobby3 %Prio3%; Hobby4 %Prio4%; Hobby5 %Prio5%;": "Hobbies"}, inplace=True)
