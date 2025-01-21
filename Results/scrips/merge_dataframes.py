@@ -56,13 +56,12 @@ def get_full_dataframe():
     # Drop Hobbies column
     xlsx_df.drop(columns=["Hobbies"], inplace=True)
 
-
-
-    # Create prio collumns for hobbies 1 - 5
+    # Create prio columns for hobbies 1 - 5
     for i in range(1, 6):
-        xlsx_df[f"prio_{i}"] = np.nan
-        
-
+        if f"hobby_{i}" not in xlsx_df.columns:
+            xlsx_df[f"hobby_{i}"] = None
+        if f"prio_{i}" not in xlsx_df.columns:
+            xlsx_df[f"prio_{i}"] = None
 
     # Merge XML and XLSX
     full_df = pd.merge(xml_df, xlsx_df, on="_id", how="outer")
@@ -72,4 +71,3 @@ def get_full_dataframe():
 
     # print(full_df.head().T)
     return full_df
-
