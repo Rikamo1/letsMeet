@@ -1,0 +1,5 @@
+Lib
+.vscode
+include
+Scripts
+pyvenv.cfg
