@@ -9,5 +9,4 @@ def get_data_frame_from_xlsx():
     # Einlesen der Excel-Datei
     df = read_excel(aktueller_pfad.parent / "db_dump.xlsx")
     # Ausgabe des DataFrames
-    print(df)
     return df

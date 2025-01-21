@@ -26,9 +26,6 @@ def get_data_frame_from_db():
     if data:
         # Umwandlung der Daten in ein Pandas DataFrame
         db_df = pd.DataFrame(data)
-
-        # Ausgabe des DataFrames
-        print(db_df)
-        return 
+        return db_df
     else:
         print("Keine Daten gefunden.")
