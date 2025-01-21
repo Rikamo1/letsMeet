@@ -31,9 +31,14 @@ def get_full_dataframe():
     xml_df.rename(columns={"email": "_id"}, inplace=True)
     xlsx_df.rename(columns={"E-Mail": "_id"}, inplace=True)
 
-    # Delete name from Database and XLSX
-    db_df.drop(columns=["name"], inplace=True)
-    xlsx_df.drop(columns=["Nachname, Vorname"], inplace=True)
+    # Convert name from db and xlsx to first and last name in single columns
+    db_df["name"] = db_df["name"].str.split(" ")
+    db_df["first_name"] = db_df["name"].str[0]
+    db_df["last_name"] = db_df["name"].str[1]
+    
+    xlsx_df["Nachname, Vorname"] = xlsx_df["Nachname, Vorname"].str.split(", ")
+    xlsx_df["first_name"] = xlsx_df["Nachname, Vorname"].str[1]
+    xlsx_df["last_name"] = xlsx_df["Nachname, Vorname"].str[0]
 
     # rename XLSX Hobby1 %Prio1%; Hobby2 %Prio2%; Hobby3 %Prio3%; Hobby4 %Prio4%; Hobby5 %Prio5%; column to Hobbies
     xlsx_df.rename(columns={"Hobby1 %Prio1%; Hobby2 %Prio2%; Hobby3 %Prio3%; Hobby4 %Prio4%; Hobby5 %Prio5%;": "Hobbies"}, inplace=True)
@@ -62,6 +67,7 @@ def get_full_dataframe():
             xlsx_df[f"hobby_{i}"] = None
         if f"prio_{i}" not in xlsx_df.columns:
             xlsx_df[f"prio_{i}"] = None
+            
 
     # Merge XML and XLSX
     full_df = pd.merge(xml_df, xlsx_df, on="_id", how="outer")
@@ -69,5 +75,8 @@ def get_full_dataframe():
     # Merge full_df with db_df
     full_df = pd.merge(full_df, db_df, on="_id", how="outer")
 
+    # drop first_name_x and last_name_x columns
+    full_df = full_df.drop(columns=["first_name_x", "last_name_x"])
+    
     # print(full_df.head().T)
     return full_df
